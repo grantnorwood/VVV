@@ -206,6 +206,12 @@ if [[ $ping_result == "Connected" ]]; then
 		mv composer.phar /usr/local/bin/composer
 	fi
 
+	if [[ -f /vagrant/provision/github.token ]]; then
+		ghtoken=`cat /vagrant/provision/github.token`
+		composer config --global github-oauth.github.com $ghtoken
+		echo "Your personal GitHub token is set for Composer."
+	fi
+
 	# Update both Composer and any global packages. Updates to Composer are direct from
 	# the master branch on its GitHub repository.
 	if [[ -n "$(composer --version --no-ansi | grep 'Composer version')" ]]; then
@@ -588,25 +594,16 @@ PHP
 
 	# Download phpMyAdmin
 	if [[ ! -d /srv/www/default/database-admin ]]; then
-		echo "Downloading phpMyAdmin 4.3.11.1..."
+		echo "Downloading phpMyAdmin 4.2.13.1..."
 		cd /srv/www/default
-		wget -q -O phpmyadmin.tar.gz 'http://sourceforge.net/projects/phpmyadmin/files/phpMyAdmin/4.3.11.1/phpMyAdmin-4.3.11.1-all-languages.tar.gz/download'
+		wget -q -O phpmyadmin.tar.gz 'https://files.phpmyadmin.net/phpMyAdmin/4.4.10/phpMyAdmin-4.4.10-all-languages.tar.gz'
 		tar -xf phpmyadmin.tar.gz
-		mv phpMyAdmin-4.3.11.1-all-languages database-admin
+		mv phpMyAdmin-4.4.10-all-languages database-admin
 		rm phpmyadmin.tar.gz
 	else
 		echo "PHPMyAdmin already installed."
 	fi
 	cp /srv/config/phpmyadmin-config/config.inc.php /srv/www/default/database-admin/
-
-	# If custom phpMyAdmin config exists, copy that file over.
-	if [[ -f /srv/config/phpmyadmin-config/config.inc.custom.php ]]; then
-		cp -f /srv/config/phpmyadmin-config/config.inc.custom.php /srv/www/default/database-admin/
-	else
-		# Else, remove the file from the vm.
-		rm /srv/www/default/database-admin/config.inc.custom.php
-	fi
-	
 else
 	echo -e "\nNo network available, skipping network installations"
 fi
